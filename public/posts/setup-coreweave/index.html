@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>🦮 A guide to setup Stable Diffusion using Kubernetes on Coreweave | Christopher Hall: CoreWeave Technical Project</title>
+
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
+<meta name="viewport" content="width=device-width,minimum-scale=1">
+<meta name="description" content="Step-by-step instructions on setting up Stable Diffusion using a Coreweave Namespace.">
+<meta name="generator" content="Hugo 0.127.0">
+
+
+  <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+
+
+
+
+
+
+
+
+  </head>
+
+  <body>
+    <nav class="navigation">
+	
+		<a href="/"> <span class="arrow">←</span>Home</a>
+	
+	<a href="/posts"></a>
+	<a href="/tags"></a>
+	<a href="/about">About</a>
+
+	
+
+	
+</nav>
+
+
+    <main class="main">
+      
+
+<section id="single">
+    <h1 class="title">🦮 A guide to setup Stable Diffusion using Kubernetes on Coreweave</h1>
+
+    <div class="tip">
+        <time datetime="2024-06-14 14:22:31 &#43;0100 BST">Jun 14, 2024</time>
+        <span class="split">
+          ·
+        </span>
+        <span>
+          1056 words
+        </span>
+        <span class="split">
+          ·
+        </span>
+        <span>
+          5 minute read
+        </span>
+    </div>
+
+    
+    
+
+
+    <div class="content">
+      <h2 id="-coreweave-stable-diffusion-deployment-guide">✍️ CoreWeave Stable Diffusion Deployment Guide <a href="#-coreweave-stable-diffusion-deployment-guide" class="anchor">🔗</a></h2><h3 id="what-is-kubernetes">What is Kubernetes? <a href="#what-is-kubernetes" class="anchor">🔗</a></h3><p>If this is your first time using Kubernetes, we can summarise Kubernetes as a container orchestrator.
+We have containers that provide us with the ability of deploying microservices, instead of overloading servers with multiple services, or wasting resources by deploying a single service on a clunky virtual machine (VM).</p>
+<p>Instead, we can use containers to deploy a single service into a container. However, what if we had 200 services and needed to somehow manage those services? We could use Docker but the overhead would be very cumbersome to manage.
+Not to mention that it would only work on a single hosts, what if we had 50 hosts?</p>
+<p>In comes Kubernetes, where we can create a Kubernetes environment that has hosts and we can deploy containers (pods) onto those hosts. This will give us reliability, potential for load balancing, increased security and even failover possibilities.</p>
+<p>For more information regarding Kubernetes, please visit: <a href="https://kubernetes.io/docs/concepts/overview/" target="_blank" rel="noopener">kubernetes.io: Overview</a></p>
+<h3 id="local-setup">Local Setup <a href="#local-setup" class="anchor">🔗</a></h3><p>In this section, we will look at setting up our local machine for being able to talk to CoreWeave&rsquo;s Kubernetes infrastructure. This guide already assumed that we have a running Namespace.</p>
+<p>We will need to install <code>kubectl</code> first as this is the primary tool that we use to speak to Kubernetes. Issue the following command to see if it is available:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl version
+</span></span></code></pre></div><h5 id="example-output">Example output: <a href="#example-output" class="anchor">🔗</a></h5><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl version
+</span></span><span style="display:flex;"><span>Client Version: v1.30.2
+</span></span><span style="display:flex;"><span>Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+</span></span><span style="display:flex;"><span>Server Version: v1.20.15
+</span></span></code></pre></div><hr>
+<p>If no current version is found install the kubectl package with the command relevant to your system:</p>
+<ul>
+<li>
+<p>For Linux distributions see:
+<a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/" target="_blank" rel="noopener">https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/</a></p>
+</li>
+<li>
+<p>For Windows see:
+<a href="https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/" target="_blank" rel="noopener">https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/</a></p>
+</li>
+</ul>
+<hr>
+<p>For the purposes of this guide and deployment, we will be using and assuming MacOS, therefore we can issue the following command to acquire <code>kubectl</code>:</p>
+<blockquote>
+<p>ℹ️ This assumes you have Homebrew installed on the local system, if not, we can acquire it here: <a href="https://brew.sh" target="_blank" rel="noopener">Homebrew: The Missing Package Manager for macOS</a></p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ brew install kubectl
+</span></span></code></pre></div><p>Once the utility has been installed, we will need to go and ensure that our CoreWeave kubeconfig has been put into the correct location so that we do not encounter errors when issuing kubectl commands.</p>
+<p>By default, kubectl will read our configuration file from the <code>/Users/&lt;your_user&gt;/.kube/config</code> location. Therefore, we need to put it there.</p>
+<p>Our configuration contains the necessary context, access token, server location, amongst other things, so that kubectl knows where to connect to.</p>
+<p>Assuming we have downloaded the configuration and it is in our <code>Downloads</code> folder, we can move it to the required location by issuing:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ mv ~/Downloads/kubeconfig ~/.kube/config
+</span></span></code></pre></div><p>For further information on setting up kubectl, you can reference the following CoreWeave documentation: <a href="https://docs.coreweave.com/coreweave-kubernetes/getting-started" target="_blank" rel="noopener">Get Started with Kubernetes</a></p>
+<h3 id="download-stable-diffusion">Download Stable Diffusion <a href="#download-stable-diffusion" class="anchor">🔗</a></h3><p>In this section, we will use the <code>git</code> utility to go and acquire the necessary files for setting up Stable Diffusion in our Kubernetes deployment.</p>
+<p>Using the <code>git</code> utility, we need to clone the following repository locally: <a href="https://github.com/coreweave/kubernetes-cloud" target="_blank" rel="noopener">coreweave/kubernetes-cloud</a></p>
+<p>If <code>git</code> is not available locally, we can install it using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ brew install git 
+</span></span></code></pre></div><blockquote>
+<p>ℹ️ This respository contains examples for getting started with Kubernetes on the CoreWeave platform</p>
+</blockquote>
+<p>Issue the following command to get started:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ git clone git@github.com:coreweave/kubernetes-cloud.git
+</span></span></code></pre></div><p>Navigate to the package files for stable-diffusion:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ cd kubernetes-cloud/online-inference/stable-diffusion
+</span></span></code></pre></div><hr>
+<h3 id="setup-kubectl">Setup kubectl <a href="#setup-kubectl" class="anchor">🔗</a></h3><p>As part of our kubeconfig, we have a context we will need to switch into, to be able to tell kubectl to target a specific Kubernetes environment.</p>
+<blockquote>
+<p>ℹ️ A kubeconfig can contain multiple contexts for different environments. We select the correct context to deploy into.</p>
+</blockquote>
+<p>We can switch to the <code>coreweave</code> context using:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl config use-context coreweave
+</span></span></code></pre></div><blockquote>
+<p>ℹ️ <a href="https://github.com/sbstp/kubie" target="_blank" rel="noopener">kubie</a> or <a href="https://formulae.brew.sh/formula/kubectx" target="_blank" rel="noopener">kubectx</a> are alternative tools that can be used to switch between kubectl contexts which also have additional cool features!</p>
+</blockquote>
+<hr>
+<h3 id="deploying-the-stable-diffusion-service">Deploying the Stable Diffusion Service <a href="#deploying-the-stable-diffusion-service" class="anchor">🔗</a></h3><p>Within the above repository we should now be inside, we will see a file called: <code>02-inference-service-yaml</code>.
+This file contains deployment information for the Stable Diffusion service. Consider it a &ldquo;blueprint&rdquo; for creating pod(s).</p>
+<p>We can understand that this is a service as the file contains:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Service</span>
+</span></span></code></pre></div><p>We can feed this YAML file into Kubernetes via kubectl, using the following command, to begin deployment:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl apply -f 02-inference-service.yaml
+</span></span></code></pre></div><p>We should then see a message saying it has been created and after some time, since Kubernetes needs to build and scale the pods, we can then verify the service by issuing:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl get ksvc stable-diffusion
+</span></span></code></pre></div><p>If we wanted to view any pods that this deployment has created, we can issue the following commands to get a list of pods:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl get pods
+</span></span></code></pre></div><p>Using the pod information gleaned from the above command, we can go further and see how the pod is built alongside some other technical information that may be of use for future troubleshooting/debugging efforts.</p>
+<p>We can issue the following command to &ldquo;describe&rdquo; our newly created pods:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl describe pod sd-00001-deployment-7c7897bb68-ghhhs
+</span></span></code></pre></div><h5 id="example-outputs">Example outputs: <a href="#example-outputs" class="anchor">🔗</a></h5><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl get ksvc stable-diffusion
+</span></span><span style="display:flex;"><span>NAME   URL                                                           LATESTCREATED   LATESTREADY   READY   REASON
+</span></span><span style="display:flex;"><span>sd     https://sd.tenant-36ac33-proj2.knative.ord1.coreweave.cloud   sd-00001        sd-00001      True
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl get pods
+</span></span><span style="display:flex;"><span>NAME                                   READY   STATUS    RESTARTS   AGE
+</span></span><span style="display:flex;"><span>sd-00001-deployment-7c7897bb68-ghhhs   2/2     Running   <span style="color:#ae81ff">0</span>          24h
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl describe pod sd-00001-deployment-7c7897bb68-ghhhs
+</span></span><span style="display:flex;"><span>Name:                 sd-00001-deployment-7c7897bb68-ghhhs
+</span></span><span style="display:flex;"><span>Namespace:            tenant-36ac33-proj2
+</span></span><span style="display:flex;"><span>Priority:             <span style="color:#ae81ff">1000000</span>
+</span></span><span style="display:flex;"><span>Priority Class Name:  normal
+</span></span><span style="display:flex;"><span>Service Account:      default
+</span></span><span style="display:flex;"><span>Node:                 gbcb9ec/10.135.40.2
+</span></span><span style="display:flex;"><span>Start Time:           Fri, <span style="color:#ae81ff">14</span> Jun <span style="color:#ae81ff">2024</span> 18:40:43 +0100
+</span></span><span style="display:flex;"><span>...
+</span></span></code></pre></div><h4 id="interacting-with-stable-diffusion-via-rest-api">Interacting with Stable Diffusion via REST API <a href="#interacting-with-stable-diffusion-via-rest-api" class="anchor">🔗</a></h4><p>To be able to interact with the service, we need to craft a POST request to send to the Stable Diffusion RESTful API.</p>
+<p>The POST request will need to include a payload, or &ldquo;body&rdquo;, that contains a field in it called &ldquo;prompt&rdquo;, which Stable Diffusion will interpret as context for our image.</p>
+<p>The following command can be used to create an image, noting the <code>--output</code> pointing to a local filename:</p>
+<blockquote>
+<p>ℹ️ Please change &lt;namespace&gt; with your actual namespace</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ curl -X <span style="color:#e6db74">&#39;POST&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  <span style="color:#e6db74">&#39;https://sd.&lt;namespace&gt;.knative.ord1.coreweave.cloud/generate&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;accept: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;Content-Type: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -d <span style="color:#e6db74">&#39;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;prompt&#34;: &#34;an IT engineer working hard at their desk&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;guidance_scale&#34;: 7,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;num_inference_steps&#34;: 28,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;seed&#34;: 0,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;width&#34;: 512,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;height&#34;: 512
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}&#39;</span> --output it_engineer.png
+</span></span></code></pre></div><p>Once this has come back, hopefully without error, you will be able to issue the following command to open the image and view the results:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ open it_engineer.png
+</span></span></code></pre></div><hr>
+<h3 id="known-issues">Known Issues <a href="#known-issues" class="anchor">🔗</a></h3><ul>
+<li>The link contained in the Stable Diffusion <code>README.md</code> contains a link that 404&rsquo;s, specifically here: <a href="https://github.com/coreweave/kubernetes-cloud/tree/master/online-inference/stable-diffusion" target="_blank" rel="noopener">stable-diffusion</a>
+<ul>
+<li>This should actually point to: <a href="https://docs.coreweave.com/coreweave-machine-learning-and-ai/how-to-guides-and-tutorials/examples/hugging-face-guides/pytorch-hugging-face-diffusers-stable-diffusion-text-to-image" target="_blank" rel="noopener">Stable Diffusion: Text-to-image</a></li>
+</ul>
+</li>
+</ul>
+<h3 id="appendix">Appendix <a href="#appendix" class="anchor">🔗</a></h3><ul>
+<li>For more information on Stable Diffusion, please visit: <a href="https://stability.ai/stable-image" target="_blank" rel="noopener">Stability.ai</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+</section>
+
+
+    </main>
+    
+    <footer id="footer">
+    
+
+    <div class="copyright">
+    
+       © Copyright 
+       2024 
+       <span class="split">
+        <svg fill="#bbbbbb" width="15" height="15" version="1.1" id="heart-15" xmlns="http://www.w3.org/2000/svg" width="15px" height="15px" viewBox="0 0 15 15">
+  <path d="M13.91,6.75c-1.17,2.25-4.3,5.31-6.07,6.94c-0.1903,0.1718-0.4797,0.1718-0.67,0C5.39,12.06,2.26,9,1.09,6.75&#xA;&#x9;C-1.48,1.8,5-1.5,7.5,3.45C10-1.5,16.48,1.8,13.91,6.75z"/>
+</svg>
+       </span>
+       
+    
+    </div>
+
+    
+      <div class="powerby">
+        
+      </div>
+    
+</footer>
+
+
+
+  </body>
+</html>

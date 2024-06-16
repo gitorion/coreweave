@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-gb">
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <title>☸️ My CoreWeave Project Deployment | Christopher Hall: CoreWeave Technical Project</title>
+
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">    
+<meta name="viewport" content="width=device-width,minimum-scale=1">
+<meta name="description" content="A post about my journey learning more about CoreWeave!">
+<meta name="generator" content="Hugo 0.127.0">
+
+
+  <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+
+
+<link rel="stylesheet" href="/css/style.css">
+
+
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+
+
+
+
+
+
+
+
+  </head>
+
+  <body>
+    <nav class="navigation">
+	
+		<a href="/"> <span class="arrow">←</span>Home</a>
+	
+	<a href="/posts"></a>
+	<a href="/tags"></a>
+	<a href="/about">About</a>
+
+	
+
+	
+</nav>
+
+
+    <main class="main">
+      
+
+<section id="single">
+    <h1 class="title">☸️ My CoreWeave Project Deployment</h1>
+
+    <div class="tip">
+        <time datetime="2024-06-14 16:10:06 &#43;0100 BST">Jun 14, 2024</time>
+        <span class="split">
+          ·
+        </span>
+        <span>
+          802 words
+        </span>
+        <span class="split">
+          ·
+        </span>
+        <span>
+          4 minute read
+        </span>
+    </div>
+
+    
+    
+
+
+    <div class="content">
+      <h2 id="-deploying-stable-diffusion-api-on-kubernetes">🚀 Deploying Stable Diffusion API on Kubernetes <a href="#-deploying-stable-diffusion-api-on-kubernetes" class="anchor">🔗</a></h2><p>The primary task was to deploy a <strong>Stable Diffusion</strong> model that is served via an API.
+I used the Kubernetes configuration file (kubeconfig) provided to me alongside the following documentation: <a href="https://docs.coreweave.com/coreweave-machine-learning-and-ai/how-to-guides-and-tutorials/examples/hugging-face-guides/pytorch-hugging-face-diffusers-stable-diffusion-text-to-image" target="_blank" rel="noopener">Stable Diffusion: Text to Image</a>.</p>
+<blockquote>
+<p>ℹ️ I did learn through use of CoreWeave that if my <em>kubeconfig</em> file was misplaced, that I could acquire it again in the CoreWeave WebUI in Namespaces.</p>
+</blockquote>
+<p>Using the kube configuration, I was able to start inspecting what I was capable of doing, as I learned that the token limited me to do only certain actions.
+Following the guide, I was able to successfully deploy the images and create pods that hosted the API for Stable Diffusion.</p>
+<p>I tested the deployment by issuing cURL POST requests with certain text to see if the response would return me an image that was accurate and met the conditions I set in the POST request.
+The images returned were accurate. However, what I did notice was that if the description was too verbose, the model began to struggle and produce inaccuracies in the image.</p>
+<p>The ability to be able to issue a POST request to generate an image on the fly based on certain text though is very cool! I can see where this could be effective if there is a dynamic need in a script for an image where we can feed the script a POST request to the model and get it to generate a dynamic image. For instance, if the script was to say hello to you, but we needed a name from you, the script could ask for your name and return an image with the name while saying hello.</p>
+<h3 id="-post-request-examples">✉️ POST Request Examples <a href="#-post-request-examples" class="anchor">🔗</a></h3><p>The 3 images I generated from the model are below, coupled with their corresponding POST request:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>curl -X <span style="color:#e6db74">&#39;POST&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  <span style="color:#e6db74">&#39;https://sd.tenant-36ac33-proj2.knative.ord1.coreweave.cloud/generate&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;accept: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;Content-Type: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -d <span style="color:#e6db74">&#39;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;prompt&#34;: &#34;a beautiful beach at sunset&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;guidance_scale&#34;: 7,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;num_inference_steps&#34;: 28,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;seed&#34;: 0,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;width&#34;: 512,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;height&#34;: 512
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}&#39;</span> --output image1.png
+</span></span></code></pre></div><p><p class="markdown-image">
+  <img src="/images/image1.png" alt="a beautiful beach at sunset"  title="A beautiful beach!" />
+</p></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>curl -X <span style="color:#e6db74">&#39;POST&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  <span style="color:#e6db74">&#39;https://sd.tenant-36ac33-proj2.knative.ord1.coreweave.cloud/generate&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;accept: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;Content-Type: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -d <span style="color:#e6db74">&#39;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;prompt&#34;: &#34;a clear night sky&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;guidance_scale&#34;: 7,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;num_inference_steps&#34;: 28,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;seed&#34;: 0,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;width&#34;: 512,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;height&#34;: 512
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}&#39;</span> --output image2.png
+</span></span></code></pre></div><p><p class="markdown-image">
+  <img src="/images/image2.png" alt="a clear night sky"  title="A Clear Night Sky!" />
+</p></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>curl -X <span style="color:#e6db74">&#39;POST&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  <span style="color:#e6db74">&#39;https://sd.tenant-36ac33-proj2.knative.ord1.coreweave.cloud/generate&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;accept: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -H <span style="color:#e6db74">&#39;Content-Type: application/json&#39;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  -d <span style="color:#e6db74">&#39;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;prompt&#34;: &#34;a large scottish style castle at night&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;guidance_scale&#34;: 7,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;num_inference_steps&#34;: 28,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;seed&#34;: 0,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;width&#34;: 512,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  &#34;height&#34;: 512
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}&#39;</span> --output image3.png
+</span></span></code></pre></div><p><p class="markdown-image">
+  <img src="/images/image3.png" alt="a large scottish style castle at night"  title="A Scottish Castle!" />
+</p></p>
+<h3 id="kubernetes-learnings">Kubernetes Learnings <a href="#kubernetes-learnings" class="anchor">🔗</a></h3><p>I began looking more into how Kubernetes works and just getting to grips with the basics. The CoreWeave documentation helped me understand how deployments work.</p>
+<h4 id="deployments">Deployments <a href="#deployments" class="anchor">🔗</a></h4><ul>
+<li>
+<p>Kubernetes deployments are deployed using YAML files.</p>
+<ul>
+<li>These deployments can be also called &ldquo;Manifests&rdquo;.</li>
+</ul>
+</li>
+<li>
+<p>The manifest contains instructions to tell Kubernetes how to build something.</p>
+<ul>
+<li>This could be different <em>kind</em>&rsquo;s of things, such as <code>Service</code>, <code>Config</code>, <code>Secret</code>, <code>Deployment</code>. (In the case of this task, we were deploying a <code>Service</code>)</li>
+</ul>
+</li>
+<li>
+<p>The manifest will also contain information such as:</p>
+<ul>
+<li>Name</li>
+<li>Image</li>
+<li>Resources
+<ul>
+<li>Cores</li>
+<li>Memory</li>
+</ul>
+</li>
+<li>Environment variables</li>
+<li>Networking
+<ul>
+<li>Ports</li>
+</ul>
+</li>
+<li>Replicas</li>
+</ul>
+<p>Amongst other things.</p>
+</li>
+</ul>
+<p>The manifest itself is an interpreted script of instructions we give Kubernetes to deploy something in a given way. This could also be viewed as our deployment&rsquo;s entry point into Kubernetes.</p>
+<h4 id="-lift-off">👨‍🚀 Lift off! <a href="#-lift-off" class="anchor">🔗</a></h4><p>Once a deployment has been applied and Kubernetes has built the pods, we can actually go and get further information on how the pod has been deployed within the namespace:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>▶ kubectl describe pod sd-00001-deployment-7c7897bb68-ghhhs
+</span></span></code></pre></div><p>I can see the values generated for this deployment inside the created Kubernetes pod.</p>
+<p>From a configuration and troubleshooting perspective, a few values immediately jump out worthy of note:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-shell" data-lang="shell"><span style="display:flex;"><span>Name:           tenant-36ac33-proj2
+</span></span><span style="display:flex;"><span>Namespace:      tenant-36ac33-proj2
+</span></span><span style="display:flex;"><span>Node:           gbcb9ec/10.135.40.2
+</span></span><span style="display:flex;"><span>Status:         Running
+</span></span><span style="display:flex;"><span>Started:        Fri, <span style="color:#ae81ff">14</span> Jun <span style="color:#ae81ff">2024</span> 18:40:46 +0100
+</span></span><span style="display:flex;"><span>Controlled By:  ReplicaSet/sd-00001-deployment-7c7897bb68
+</span></span></code></pre></div><p>There are certain things that I am unable to see though as the role that I have does not have access to see certain resources, such as Secrets.</p>
+<p>I suppose this is due to the RBAC Token provided to me which details my role and what I can and cannot do. More information on RBAC tokens are found here: <a href="https://docs.coreweave.com/coreweave-kubernetes/getting-started/custom-rbac-access-tokens" target="_blank" rel="noopener">Custom RBAC Access Tokens</a></p>
+<blockquote>
+<p>ℹ️ Information about the deployment, such as resources used can also be viewed in the CoreWeave WebUI under Namespaces!</p>
+</blockquote>
+<h4 id="-thoughts">💭 Thoughts <a href="#-thoughts" class="anchor">🔗</a></h4><p>As an individual who has not used Kubernetes extensively at a professional level it has been a lot of fun learning and exploring the power and possibilities of the solution.</p>
+<p>It reminds me of the first time I was able to use Docker and to be able to understand how containers worked.
+This has let me consider further about orchestration of containers and the deployment of reliable infrastructure.</p>
+<p>My next step in learning Kubernetes will be to follow the guide by Kelsey Hightower: <a href="https://github.com/kelseyhightower/kubernetes-the-hard-way" target="_blank" rel="noopener">Kubernetes-the-hard-way</a> so that I can gain more in-depth knowledge on Kubernetes.</p>
+
+    </div>
+
+    
+    
+    
+
+</section>
+
+
+    </main>
+    
+    <footer id="footer">
+    
+
+    <div class="copyright">
+    
+       © Copyright 
+       2024 
+       <span class="split">
+        <svg fill="#bbbbbb" width="15" height="15" version="1.1" id="heart-15" xmlns="http://www.w3.org/2000/svg" width="15px" height="15px" viewBox="0 0 15 15">
+  <path d="M13.91,6.75c-1.17,2.25-4.3,5.31-6.07,6.94c-0.1903,0.1718-0.4797,0.1718-0.67,0C5.39,12.06,2.26,9,1.09,6.75&#xA;&#x9;C-1.48,1.8,5-1.5,7.5,3.45C10-1.5,16.48,1.8,13.91,6.75z"/>
+</svg>
+       </span>
+       
+    
+    </div>
+
+    
+      <div class="powerby">
+        
+      </div>
+    
+</footer>
+
+
+
+  </body>
+</html>

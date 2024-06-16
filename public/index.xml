@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Christopher Hall: CoreWeave Technical Project</title>
+    <link>http://localhost:1313/</link>
+    <description>Recent content on Christopher Hall: CoreWeave Technical Project</description>
+    <generator>Hugo</generator>
+    <language>en-gb</language>
+    <lastBuildDate>Fri, 14 Jun 2024 16:10:06 +0100</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>☸️ My CoreWeave Project Deployment</title>
+      <link>http://localhost:1313/posts/my-coreweave-setup-journey/</link>
+      <pubDate>Fri, 14 Jun 2024 16:10:06 +0100</pubDate>
+      <guid>http://localhost:1313/posts/my-coreweave-setup-journey/</guid>
+      <description>A post about my journey learning more about CoreWeave!</description>
+    </item>
+    <item>
+      <title>🦮 A guide to setup Stable Diffusion using Kubernetes on Coreweave</title>
+      <link>http://localhost:1313/posts/setup-coreweave/</link>
+      <pubDate>Fri, 14 Jun 2024 14:22:31 +0100</pubDate>
+      <guid>http://localhost:1313/posts/setup-coreweave/</guid>
+      <description>Step-by-step instructions on setting up Stable Diffusion using a Coreweave Namespace.</description>
+    </item>
+    <item>
+      <title>🙋 About Me</title>
+      <link>http://localhost:1313/about/</link>
+      <pubDate>Thu, 13 Jun 2024 23:21:04 +0100</pubDate>
+      <guid>http://localhost:1313/about/</guid>
+      <description>Hi, my name is Christopher!</description>
+    </item>
+  </channel>
+</rss>

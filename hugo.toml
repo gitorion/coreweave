@@ -1,0 +1,4 @@
+baseURL = 'https://coreweave.ceras.dev'
+languageCode = 'en-gb'
+title = "Christopher Hall: CoreWeave Technical Project"
+theme = 'mini_custom'
