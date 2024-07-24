@@ -4,7 +4,7 @@ date = 2024-06-13T23:21:04+01:00
 draft = false
 summary = "Hi, my name is Christopher!"
 +++
-Hi, my name Christopher Hall and I am interviewing for a Cloud Support Engineer position at CoreWeave!
+Hi, my name Christopher Hall and I interviewed for a Cloud Support Engineer position at CoreWeave!  I was successful in this process and started the role on 22nd July 2024!
 
 
 During this exercise, I got the opportunity to learn more about:
@@ -20,8 +20,6 @@ This has allowed me to showcase my documentation site by uploading it to Github 
 
 ---
 
-It has been a great experience and I hope to meet and work with you all in the future! 👋
+It was a great experience and I highly recommend CoreWeave and it's interview process to anyone looking to land a cool new position! 👋
 
 Find me on: [Linkedin](linkedin.com/in/cc-hall)
-
-![Chris Hall CV](/images/resume.png "Resume")
